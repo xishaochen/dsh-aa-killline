@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d26;--line:#2a2e3a;--txt:#e8eaf0;--muted:#9aa0b0;--amb:#f5a623;--lit:#ffd479;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:28px 18px;}
+.wrap{max-width:1160px;margin:0 auto;}
+h1{font-size:21px;font-weight:700;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px;}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 13px;min-width:146px;}
+.kpi .k{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.kpi .v{font-size:15px;font-weight:700;}
+.kpi .v small{font-size:11px;color:var(--muted);font-weight:400;}
+.legend{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--muted);align-items:center;}
+.lg{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:3px 9px;border-radius:20px;
+  border:1px solid transparent;user-select:none;transition:background .12s;}
+.lg:hover{background:#20242f;border-color:#2a2e3a;}
+.lg.on{background:rgba(245,166,35,.14);border-color:rgba(245,166,35,.5);color:var(--lit);}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;}
+.lg i.cnm{background:#6b7280;border:1.5px solid #fff;}
+.lg i.star{width:11px;height:11px;border-radius:0;background:#b9bfcc;
+  clip-path:polygon(50% 0%,61.8% 34.5%,98% 34.5%,69% 56%,79.5% 90.5%,50% 69%,20.5% 90.5%,31% 56%,2% 34.5%,38.2% 34.5%);}
+.lg.starhint{cursor:default;}
+.lg.starhint:hover{background:transparent;border-color:transparent;}
+.lgsep{width:1px;height:15px;background:var(--line);margin:0 5px;}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:9px;}
+.controls input[type=text],.controls select{background:#12141b;border:1px solid var(--line);color:var(--txt);
+  border-radius:7px;padding:8px 11px;font-size:12.5px;outline:none;font-family:inherit;}
+.controls input[type=text]{width:264px;}
+.controls input[type=text]:focus{border-color:#4a7fe8;box-shadow:0 0 0 3px rgba(74,127,232,.15);}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;}
+.seg button{background:#12141b;border:0;color:var(--muted);padding:8px 13px;font-size:12.5px;cursor:pointer;
+  font-family:inherit;white-space:nowrap;}
+.seg button+button{border-left:1px solid var(--line);}
+.seg button.on{background:rgba(245,166,35,.15);color:var(--lit);font-weight:600;}
+.controls button.plain{background:#20242f;border:1px solid var(--line);color:var(--muted);border-radius:7px;
+  padding:8px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;}
+.controls button.plain:hover{color:var(--txt);border-color:#3a4050;}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);
+  cursor:pointer;user-select:none;padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:#12141b;}
+.chk:hover{border-color:#3a4050;color:var(--txt);}
+.chk input{accent-color:#f5a623;cursor:pointer;margin:0;}
+.agentbox{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:8px;padding:10px 14px;margin-bottom:11px;font-size:12px;color:var(--muted);}
+.agentbox label{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+.agentbox b{color:var(--txt);}
+.agentbox input[type=range]{width:112px;accent-color:#f5a623;cursor:pointer;}
+.agentbox output{color:var(--lit);font-weight:600;min-width:52px;font-variant-numeric:tabular-nums;}
+.agentbox .hint2{color:#7c8397;font-size:11px;}
+.pblock{display:flex;gap:18px;flex-wrap:wrap;align-items:center;width:100%;}
+.pblock[hidden]{display:none;}
+.pnote{font-size:12px;color:var(--muted);line-height:1.7;}
+.pnote b{color:#cfd5e3;}
+.pnote code{background:#20242f;border-radius:3px;padding:1px 5px;font-size:11.5px;}
+.derived{width:100%;border-top:1px dashed #2a2e3a;padding-top:8px;font-size:11.5px;color:#7c8397;line-height:1.7;}
+.derived b{color:var(--lit);font-weight:600;}
+.agentbox label.off{opacity:.34;}
+.agentbox label.off input{cursor:not-allowed;}
+.agentbox .warn{color:#f0883e;font-size:11px;}
+.agentbox select{background:#12141b;border:1px solid var(--line);color:var(--txt);border-radius:6px;
+  padding:5px 8px;font-size:12px;font-family:inherit;cursor:pointer;outline:none;}
+.agentbox select:focus{border-color:#4a7fe8;}
+.cnt{font-size:12px;color:var(--muted);margin-bottom:9px;min-height:17px;}
+.cnt b{color:var(--lit);}
+.cnt .hidhint{color:#f0a04b;}
+.cnt .hidhint b{color:#ffd479;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.36);color:var(--lit);border-radius:20px;
+  padding:3px 11px;font-size:11.5px;cursor:pointer;font-family:inherit;}
+.chip:hover{background:rgba(245,166,35,.22);}
+.chip em{font-style:normal;opacity:.72;margin-left:3px;}
+.chip.cA{background:rgba(79,214,223,.1);border-color:rgba(79,214,223,.42);color:#7fe6ee;}
+.chip.cB{background:rgba(255,142,196,.1);border-color:rgba(255,142,196,.42);color:#ffa8d2;}
+.cmp{display:none;margin:0 0 12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;}
+.cmp.on{display:block;}
+.cmp table{width:100%;font-size:12px;}
+.cmp th,.cmp td{padding:5px 10px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left;}
+.cmp th{color:var(--muted);font-weight:500;font-size:11px;}
+.cmp td.k{color:var(--muted);}
+.cmp .cA{color:#7fe6ee;}
+.cmp .cB{color:#ffa8d2;}
+.cmp .dlt{color:var(--lit);font-size:11.5px;line-height:1.95;}
+.cmp .miss{color:#f0883e;}
+.lblA{fill:#4fd6df;font-size:11px;font-weight:600;}
+.lblB{fill:#ff8ec4;font-size:11px;font-weight:600;}
+.sephint{font-size:11px;color:#7c8397;margin-left:2px;}
+.sephint code{background:#20242f;border-radius:3px;padding:1px 5px;color:#cfd5e3;}
+.chartbox{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;}
+svg{display:block;width:100%;height:auto;}
+.tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:#0b0d12;border:1px solid #3a4050;border-radius:7px;padding:8px 10px;font-size:11.5px;
+  line-height:1.6;color:var(--txt);white-space:nowrap;z-index:9;box-shadow:0 6px 18px rgba(0,0,0,.5);}
+.tip b{color:#fff;}
+.tip .t2{color:var(--lit);}
+.ax{fill:#7c8397;font-size:10.5px;}
+.axl{fill:#9aa0b0;font-size:11.5px;}
+.lbl{fill:#cfd5e3;font-size:10.5px;}
+.lbl2{fill:var(--lit);font-size:10.5px;font-weight:600;}
+.frtable{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;}
+.frtable h2{font-size:14px;margin-bottom:4px;font-weight:600;}
+.frtable .hint{font-size:11px;color:var(--muted);margin-bottom:10px;}
+table{border-collapse:collapse;width:100%;font-size:12px;}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap;}
+th{color:var(--muted);font-weight:500;font-size:11px;}
+td b{color:#fff;}
+tr.hl td{background:rgba(245,166,35,.07);}
+tr.hit td{background:rgba(255,212,121,.14);}
+.note{color:var(--muted);font-size:11.5px;margin-top:16px;line-height:1.9;}
+.note a{color:#7aa2f7;}
+.note b{color:#cfd5e3;}
+.note code{background:#20242f;border-radius:3px;padding:1px 5px;font-size:11px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>__TITLE__</h1>
+  <div class="sub">__SUB__</div>
+  <div class="kpis">
+    <div class="kpi"><div class="k">参与模型</div><div class="v" id="kpiN">—</div></div>
+    <div class="kpi"><div class="k">斩杀线（前沿）</div><div class="v" id="kpiF">—</div></div>
+    <div class="kpi"><div class="k">被斩杀（支配）</div><div class="v" id="kpiD">—</div></div>
+    <div class="kpi"><div class="k">最便宜</div><div class="v" id="kpiC">—</div></div>
+    <div class="kpi"><div class="k">最聪明</div><div class="v" id="kpiS">—</div></div>
+  </div>
+  <div class="legend" id="legend">__LEGEND__</div>
+  <div class="controls">
+    <input id="q" type="text" placeholder="搜索模型 / 厂商（空格=多条件；用 vs 对比两个模型，如 A vs B）" autocomplete="off">
+    <span class="sephint">对比：<code>GLM-5.3 vs Kimi K3</code></span>
+    <div class="seg" id="pmode">
+      <button data-mode="aa">官方 3:1 混合价</button>
+      <button data-mode="agent" class="on">Agent 口径</button>
+    </div>
+    <button id="reset" class="plain">清除筛选</button>
+    <div class="seg" id="prbasis" title="部分厂商（DeepSeek）有峰谷分时定价，AA 只收录峰值价。可切换价格基准">
+      <button data-pb="peak" class="on">峰值价</button>
+      <button data-pb="weighted">峰谷加权</button>
+      <button data-pb="offpeak">谷时价</button>
+    </div>
+    <div class="seg" id="cur">
+      <button data-cur="cny" class="on">¥ 人民币</button>
+      <button data-cur="usd">$ 美元</button>
+    </div>
+    <label class="chk" title="已下线模型保留的是退役版本的历史价，与现役模型不可直接比价">
+      <input type="checkbox" id="sret"> 包含已下线模型</label>
+    <label class="chk" title="AA 尚未收录、价格取自厂商官方定价页的补充模型（非 AA 口径）">
+      <input type="checkbox" id="sext"> 含外部补充<span id="nextN"></span></label>
+    <label class="chk" title="超贵尾部默认压缩在右侧窄带内，避免堆成一条竖线；取消勾选则按完整对数轴展开（主区会被挤窄）">
+      <input type="checkbox" id="stail" checked> 尾部压缩</label>
+  </div>
+  <div class="agentbox" id="abox">
+    <div class="pblock" id="pA">
+      <span class="pnote">AA 官方口径：<code>price = (3×输入 + 1×输出) ÷ 4</code>。比例固定 3:1，<b>不含缓存定价</b>，<b>无参数可调</b>，作为基准参照。</span>
+      <span class="hint2">想拆解「比例」与「缓存」各自的影响 → 切到「Agent 口径」。</span>
+    </div>
+    <div class="pblock" id="pB" hidden>
+      <label>输入:输出比 <b>R</b> <input type="range" id="sR" min="1" max="150" step="1" value="50"><output id="oR">50 : 1</output></label>
+      <label>缓存命中率 <b>h</b> <input type="range" id="sH" min="0" max="99" step="1" value="90"><output id="oH">90%</output></label>
+      <label>缓存价来源
+        <select id="csrc">
+          <option value="real" selected>按模型真实价</option>
+          <option value="uniform">统一折扣</option>
+        </select></label>
+      <label id="lbC">缓存读折扣 <b>c</b> <input type="range" id="sC" min="0" max="100" step="1" value="10"><output id="oC">10%</output></label>
+      <div class="derived" id="derived"></div>
+    </div>
+  </div>
+  <div id="cnt" class="cnt"></div>
+  <div id="chips" class="chips"></div>
+  <div class="cmp" id="cmp"></div>
+  <div class="chartbox">
+    <svg id="svg" viewBox="0 0 __W__ __H__" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="tip" class="tip"></div>
+  </div>
+  <div class="frtable">
+    <h2 id="frhead">斩杀线模型清单</h2>
+    <div class="hint">按当前价格口径升序。位于斩杀线上的模型，不存在「比它更便宜且更聪明」的模型。行底色高亮为国产模型。</div>
+    <table><thead><tr><th>模型</th><th>厂商</th><th>AAII</th><th>有效价 /1M</th>
+      <th>输入 / 输出</th><th>缓存读价</th><th>速度</th><th>发布日期</th></tr></thead><tbody id="frbody"></tbody></table>
+  </div>
+  <div class="note">__NOTE__</div>
+</div>
+<script>
+var D_ALL = __DATA__, CFG = __CFG__;
+var SHOW_RET = false, SHOW_EXT = false;
+var D = D_ALL.filter(function(d){ return (SHOW_RET || !d.ret) && (SHOW_EXT || !d.ext || d.extnew); });
+var ns = 'http://www.w3.org/2000/svg';
+var svg = document.getElementById('svg'), tip = document.getElementById('tip');
+var box = document.querySelector('.chartbox');
+var M = {l:66, r:30, t:22, b:58}, W = CFG.W, H = CFG.H;
+var pw = W - M.l - M.r, ph = H - M.t - M.b;
+
+var MODE = 'agent', RATIO = 50, HIT = 0.90, CDISC = 0.10, CSRC = 'real';
+var PBASIS = 'peak';   // peak | weighted | offpeak —— 峰谷分时定价的价格基准
+var TAIL_ON = true, TAIL_FRAC = 0.12, TAIL_MAXF = 0.20;   // 右侧压缩尾段：把超出 cap 的超贵模型铺开，避免全部叠在一条竖线上
+var CUR = 'cny', FXR = __FXR__; // USD/CNY 人民币汇率中间价（中国货币网，快照日）
+function cv(p){ return CUR === 'cny' ? p * FXR : p; }
+function sym(){ return CUR === 'cny' ? '¥' : '$'; }
+function cunit(){ return sym() + '/1M tokens'; }
+var VENDOR = '', CNONLY = false;
+var nodes = [], bySlug = {};
+
+function el(t, at){ var e = document.createElementNS(ns, t); for (var k in at) e.setAttribute(k, at[k]); return e; }
+function txt(x, y, s, cls, anchor){ var t = el('text', {x:x, y:y, class:cls, 'text-anchor':anchor||'start'}); t.textContent = s; return t; }
+function clearG(g){ while (g.firstChild) g.removeChild(g.firstChild); }
+function escA(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+function fmtP(p){
+  var s = sym();
+  if (CUR === 'cny') return p < 0.1 ? s + p.toFixed(3) : s + p.toFixed(2);
+  return p < 0.01 ? s + p.toFixed(4) : (p < 0.1 ? s + p.toFixed(3) : s + p.toFixed(2));
+}
+function fmtC(c, isReal){ return (c*100).toFixed(c < 0.03 ? 2 : 1) + '%' + (isReal ? '' : '~'); }
+
+// 图层
+var gGrid=el('g',{}), gAxis=el('g',{}), gFront=el('g',{}), gHalo=el('g',{}),
+    gPoints=el('g',{}), gFmarks=el('g',{}), gLabels=el('g',{}), gFLbl=el('g',{});
+[gGrid,gAxis,gFront,gHalo,gPoints,gFmarks,gLabels,gFLbl].forEach(function(g){ svg.appendChild(g); });
+
+// ---------- 价格口径 ----------
+// 单模型的有效缓存折扣：优先真实值，缺失则回退到统一 CDISC
+function cOf(d){
+  if (CSRC === 'real' && d.cc != null) return {c: d.cc, real: true};
+  return {c: CDISC, real: false};
+}
+// 峰谷分时定价的倍数：无 d.pk 的模型恒为 1
+function pfac(d){
+  if (!d.pk) return 1;
+  if (PBASIS === 'offpeak') return d.pk.off;
+  if (PBASIS === 'weighted') return d.pk.wt;
+  return 1;                       // peak：AA 原始挂牌即峰值价
+}
+function priceOf(d){
+  var f = pfac(d);
+  if (MODE === 'aa') return cv((3 * d.pi * f + d.po * f) / 4);
+  var inFac = RATIO * (cOf(d).c * HIT + (1 - HIT));
+  return cv((inFac * d.pi * f + d.po * f) / (RATIO + 1));
+}
+function modeLabel(){
+  if (MODE === 'aa') return '官方 3:1 混合价 = (3×输入 + 1×输出) ÷ 4';
+  var src = CSRC === 'real'
+    ? '缓存价按模型真实挂牌价（缺失时回退 c=' + Math.round(CDISC*100) + '%）'
+    : '缓存价统一按 c=' + Math.round(CDISC*100) + '%';
+  return 'Agent 口径 = [R×(c×h + 1−h)×输入 + 输出] ÷ (R+1)，R=' + RATIO + ':1，h=' + Math.round(HIT*100) + '%，' + src;
+}
+
+function computeScale(FR){
+  var mn = Infinity, mx = -Infinity;
+  D.forEach(function(d){ if (d.p < mn) mn = d.p; if (d.p > mx) mx = d.p; });
+  var fmax = 0;
+  FR.forEach(function(d){ if (d.p > fmax) fmax = d.p; });
+  // 以斩杀线最高价为基准定界：保证整条斩杀线完整可见，只裁剪右下方被支配的超贵尾部
+  // 分位兜底：尾部最多装 ~28% 的模型，避免便宜区间（如国产图）被挤成一条缝
+  var ps = D.map(function(d){ return d.p; }).sort(function(a, b){ return a - b; });
+  var q72 = ps[Math.min(ps.length - 1, Math.floor(ps.length * 0.72))] || mn;
+  var cap = Math.min(mx, Math.max(fmax * 1.15, mn * 12, q72));
+  if (!TAIL_ON) cap = mx;            // 关闭压缩 → 完整对数轴展开
+  return {x0: Math.log10(mn) - 0.06, x1: Math.log10(cap) + 0.02, cap: cap,
+          tailMax: mx, tail: TAIL_ON && mx > cap * 1.001};
+}
+function mkTicks(x0, x1){
+  var sets = [[1,2,5],[1,5],[1]], best = [];
+  for (var si = 0; si < sets.length; si++){
+    var t = [];
+    for (var e = Math.floor(x0); e <= Math.ceil(x1); e++){
+      sets[si].forEach(function(m){
+        var v = m * Math.pow(10, e), lv = Math.log10(v);
+        if (lv >= x0 - 1e-9 && lv <= x1 + 1e-9) t.push(v);
+      });
+    }
+    best = t;
+    if (t.length <= 11) break;
+  }
+  return best;
+}
+function bodyW(){ return CFG.tail ? pw * (1 - TAIL_FRAC) : pw; }
+// 主区 = 对数轴；尾部 = 在主区右侧窄带内再压缩一层对数刻度，超贵模型仍保持相对次序与间距
+function X(p){
+  if (CFG.tail && p > CFG.cap){
+    var bw = bodyW(), xa = M.l + bw + 10, xb = M.l + pw;
+    var lg = Math.log10(CFG.tailMax) - Math.log10(CFG.cap);
+    var t = lg > 1e-9 ? (Math.log10(p) - Math.log10(CFG.cap)) / lg : 1;
+    return xa + Math.max(0, Math.min(1, t)) * (xb - xa - 2);
+  }
+  return M.l + (Math.log10(Math.min(p, CFG.cap)) - CFG.x0) / (CFG.x1 - CFG.x0) * bodyW();
+}
+function Y(a){ return M.t + ph - (a / CFG.y1) * ph; }
+// 标签横向定位：默认点右侧，右侧放不下则翻到点左侧，仍越界则夹到绘图区内，避免被 SVG 视口裁切
+function lblX(px, w, off){
+  off = off || 8;
+  var x = px + off;
+  if (x + w > W - 4) x = px - off - w;
+  if (x < M.l) x = M.l;
+  if (x + w > W - 4) x = W - 4 - w;
+  return x;
+}
+
+function computeFrontier(){
+  var s = D.slice().sort(function(a, b){ return a.p - b.p || b.a - a.a; });
+  var out = [], best = -1;
+  s.forEach(function(d){ if (d.a > best){ out.push(d); best = d.a; } });
+  return out;
+}
+
+// ---------- 绘制 ----------
+function tipOn(d, cx, cy){
+  return function(){
+    var cm = cOf(d);
+    function peakLine(x){
+      if (!x.pk) return '';
+      var lab = PBASIS === 'peak' ? '峰值价' : (PBASIS === 'offpeak' ? '谷时价（×0.5）' : '峰谷加权（×' + x.pk.wt.toFixed(3) + '）');
+      return '<br><span style="color:#8bd6a0">⏱ 分时定价：' + escA(lab) +
+        '<span class="t2">，峰时 ' + escA(x.pk.hours) + '（约占 ' + Math.round(x.pk.peakshare*100) + '% 时长）</span></span>';
+    }
+    var cacheLine = (d.cr != null && d.cc != null)
+      ? '<br>缓存读价 <b>' + fmtP(cv(d.cr)) + '</b> (c=' + (d.cc*100).toFixed(2) + '%，真实价)'
+      : d.cr != null
+        ? '<br>缓存读价 <b>' + fmtP(cv(d.cr)) + '</b>，但折算折扣异常 → 按 c=' + (CDISC*100).toFixed(0) + '% 估算'
+        : '<br>缓存读价 <b>无公开定价</b> → 按 c=' + (CDISC*100).toFixed(0) + '% 估算';
+    if (MODE === 'aa') cacheLine = '';
+    var retLine = d.ret
+      ? '<br><span style="color:#f0883e">⚠ ' + escA(d.ret) + '——图中价格为退役版本的历史价，与现役模型不可直接比价</span>'
+      : '';
+    var extLine = d.ext
+      ? '<br><span style="color:#9b8cff">◈ 外部补充（AA 未收录）</span>' +
+        '<span style="display:block;margin-top:4px;padding:5px 8px;border-left:2px solid #9b8cff;' +
+        'background:rgba(155,140,255,.08);border-radius:0 4px 4px 0;white-space:normal;' +
+        'max-width:300px;color:#c8c4e8">' + escA(d.esrc || '') + '</span>'
+      : '';
+    var topLine = d.top
+      ? '<br><span style="color:#ffd479">★ ' + escA(d.c) + ' 当前最强模型</span>'
+      : '';
+    tip.innerHTML = '<b>' + escA(d.name) + '</b><br>' + escA(d.c) + ' · ' + (d.rel || '—') +
+      topLine +
+      '<br>AAII <b>' + d.a + '</b> · 速度 ' + (d.sp ? Math.round(d.sp) + ' t/s' : '—') +
+      ' · TTFT ' + (d.ttft ? d.ttft.toFixed(2) + 's' : '—') +
+      '<br>官方 3:1 混合价 ' + fmtP(cv((3*d.pi*pfac(d) + d.po*pfac(d))/4)) +
+      '<br><span class="t2">当前' + (MODE==='aa' ? '（同左）' : ' Agent 口径') + ' ' + fmtP(d.p) + '</span>' +
+      '<br>输入 ' + fmtP(cv(d.pi*pfac(d))) + ' / 输出 ' + fmtP(cv(d.po*pfac(d))) + cacheLine +
+      peakLine(d) + retLine + extLine +
+      (d.tail ? '<br><i>位于右侧压缩尾段（价格高于 ' + fmtP(CFG.cap) + '）</i>' : '');
+    tip.style.opacity = 1;
+    var r = box.getBoundingClientRect();
+    tip.style.left = Math.min(cx / CFG.W * r.width + 12, r.width - tip.offsetWidth - 8) + 'px';
+    tip.style.top = Math.max(cy / CFG.H * r.height - 8, 6) + 'px';
+  };
+}
+
+function draw(){
+  clearG(gGrid); clearG(gAxis); clearG(gFront); clearG(gHalo);
+  clearG(gPoints); clearG(gFmarks); clearG(gLabels); clearG(gFLbl);
+  nodes = []; bySlug = {};
+
+  D.forEach(function(d){ d.p = priceOf(d); });
+  // 对比可能命中隐藏条目（ext/ret），它们不在 D 里 → 用同一口径补算 p，供对比面板使用
+  D_ALL.forEach(function(d){ if (d.p == null) d.p = priceOf(d); });
+  var FR = computeFrontier();
+  var sc = computeScale(FR);
+  CFG.x0 = sc.x0; CFG.x1 = sc.x1; CFG.cap = sc.cap;
+  CFG.tail = sc.tail; CFG.tailMax = sc.tailMax;
+  var ntail = 0;
+  D.forEach(function(d){ d.tail = d.p > CFG.cap; d.clip = false; if (d.tail) ntail++; });
+
+  if (CFG.tail){
+    // 尾段宽度随落入尾部的模型数自适应：点越多给越宽，避免再次挤成一条线
+    TAIL_FRAC = Math.max(0.12, Math.min(TAIL_MAXF, 0.10 + ntail * 0.0012));
+    var bx0 = M.l + bodyW();
+    gGrid.appendChild(el('rect', {x:bx0, y:M.t, width:W - M.r - bx0, height:ph,
+      fill:'rgba(245,166,35,.035)'}));
+    gGrid.appendChild(el('line', {x1:bx0, y1:M.t, x2:bx0, y2:M.t+ph,
+      stroke:'#4a4f60', 'stroke-width':1, 'stroke-dasharray':'4 4'}));
+    gAxis.appendChild(txt(bx0 + 6, M.t - 6, '压缩尾段（' + fmtP(CFG.cap) + ' 以上，' + ntail + ' 个）', 'ax', 'start'));
+    [2, 5, 10, 20].forEach(function(m){
+      var v = CFG.cap * m;
+      if (v < CFG.tailMax * 0.96){
+        gGrid.appendChild(el('line', {x1:X(v), y1:M.t, x2:X(v), y2:M.t+ph, stroke:'#23273310', 'stroke-width':1, 'stroke-dasharray':'2 3'}));
+        gAxis.appendChild(txt(X(v), M.t+ph+18, fmtP(v), 'ax', 'middle'));
+      }
+    });
+  }
+
+  var xticks = mkTicks(CFG.x0, CFG.x1);
+  xticks.forEach(function(p){
+    gGrid.appendChild(el('line', {x1:X(p), y1:M.t, x2:X(p), y2:M.t+ph, stroke:'#23273316', 'stroke-width':1}));
+    gAxis.appendChild(txt(X(p), M.t+ph+18, fmtP(p), 'ax', 'middle'));
+  });
+  CFG.yticks.forEach(function(a){
+    gGrid.appendChild(el('line', {x1:M.l, y1:Y(a), x2:M.l+pw, y2:Y(a), stroke:'#232733', 'stroke-width':1}));
+    gAxis.appendChild(txt(M.l-9, Y(a)+3.5, a, 'ax', 'end'));
+  });
+  var xt = MODE === 'aa'
+    ? '混合价 ' + cunit() + '（3:1 输入:输出，对数轴）→ 越左越便宜'
+    : 'Agent 口径有效价 ' + cunit() + '（R=' + RATIO + ':1，缓存命中 ' + Math.round(HIT*100) + '%，对数轴）→ 越左越便宜';
+  gAxis.appendChild(txt(M.l+pw/2, M.t+ph+42, xt, 'axl', 'middle'));
+  gAxis.appendChild(txt(16, M.t+ph/2, 'AAII 智能指数 → 越上越聪明', 'axl', 'middle'))
+     .setAttribute('transform', 'rotate(-90 16 ' + (M.t+ph/2) + ')');
+
+  // 斩杀线
+  var f = FR.slice().sort(function(a, b){ return a.p - b.p; });
+  var dpath = 'M ' + X(f[0].p) + ' ' + Y(f[0].a);
+  for (var i = 0; i < f.length - 1; i++){
+    dpath += ' L ' + X(f[i+1].p) + ' ' + Y(f[i].a);
+    dpath += ' L ' + X(f[i+1].p) + ' ' + Y(f[i+1].a);
+  }
+  var fp = el('path', {d:dpath, fill:'none', stroke:'#f5a623', 'stroke-width':2.4,
+    'stroke-dasharray':'7 4', 'stroke-linejoin':'round', opacity:'.92'});
+  gFront.appendChild(fp);
+
+  // 散点
+  D.forEach(function(d){
+    // 厂商最强一律画五角星（即使它的价格超出坐标范围、位置被夹到右边缘）
+    var cx = X(d.p), cy = Y(d.a), isStar = !!d.top, isRect = false;
+    var halo = el('circle', {cx:cx, cy:cy, r: isStar ? 11.4 : 9.6, fill:'none', stroke:'#ffd479',
+      'stroke-width':2, opacity:0});
+    gHalo.appendChild(halo);
+    var node;
+    if (isRect){
+      node = el('rect', {x:cx-3.6, y:cy-3.6, width:7.2, height:7.2, fill:'#0f1115',
+        stroke:d.co, 'stroke-width':1.6, opacity:'.85'});
+    } else if (isStar){
+      // 厂商最强：五角星，颜色沿用厂商色。
+      // 注意：星形靠 transform scale() 放大，描边宽度必须用 non-scaling-stroke，
+      // 否则 stroke-width 会跟着放大 6.4 倍，圆角描边把星角糊成「花瓣」。
+      node = el('path', {d:STAR_D, fill:d.co, 'stroke-linejoin':'miter',
+        'stroke-miterlimit':4,
+        'vector-effect':'non-scaling-stroke',
+        stroke: d.china ? '#ffffff' : 'none',
+        'stroke-width': d.china ? 1.3 : 0,
+        'stroke-dasharray': 'none', opacity:'.95'});
+      node.setAttribute('transform', 'translate(' + cx + ',' + cy + ') scale(' + STAR_BASE + ')');
+    } else {
+      node = el('circle', {cx:cx, cy:cy, r:4.6, fill:d.co,
+        stroke: d.china ? '#ffffff' : 'none', 'stroke-width': d.china ? 1.6 : 0, opacity:'.85'});
+    }
+    node.addEventListener('mouseenter', tipOn(d, cx, cy));
+    node.addEventListener('mouseleave', function(){ tip.style.opacity = 0; });
+    node.style.cursor = 'pointer';
+    node.addEventListener('click', function(ev){ ev.stopPropagation(); toggleClicked(d.slug); applyFilter(); });
+    gPoints.appendChild(node);
+    if (d.ret){
+      gFmarks.appendChild(el('circle', {cx:cx, cy:cy, r:7.8, fill:'none', stroke:'#f0883e',
+        'stroke-width':1.3, 'stroke-dasharray':'3 2.4', opacity:'.9'}));
+    }
+    if (d.ext){
+      // 外部补充：紫色密集虚线环（跳色系区别于退役橙环）
+      gFmarks.appendChild(el('circle', {cx:cx, cy:cy, r:8.4, fill:'none', stroke:'#9b8cff',
+        'stroke-width':1.4, 'stroke-dasharray':'2 2.2', opacity:'.95'}));
+    }
+    var o = {d:d, node:node, halo:halo, isRect:isRect, isStar:isStar, cx:cx, cy:cy, hit:false};
+    nodes.push(o); bySlug[d.slug] = o;
+  });
+
+  var fmk = [];
+  f.forEach(function(x){
+    var o = bySlug[x.slug];
+    if (!o || o.isRect) return;
+    var st = !!x.top;
+    var m = el('circle', {cx:X(x.p), cy:Y(x.a), r: st ? 10 : 6.4, fill:'none',
+      stroke:'#f5a623', 'stroke-width':1.6});
+    gFmarks.appendChild(m); fmk.push({d:x, m:m});
+  });
+
+  // 默认标签
+  var placed = [];
+  D.slice().sort(function(a, b){ return b.a - a.a; }).forEach(function(d){
+    if (!d.lb) return;
+    var px = X(d.p), py = Y(d.a);
+    var w = d.sn.length*5.7+6;
+    var b = {x:lblX(px, w), y:py-6, w:w, h:12};
+    for (var j = 0; j < placed.length; j++){
+      var o = placed[j];
+      if (b.x < o.x+o.w && b.x+b.w > o.x && b.y < o.y+o.h && b.y+b.h > o.y) return;
+    }
+    placed.push(b);
+    gLabels.appendChild(txt(b.x+1, py+3.6, d.sn, d.lb === 2 ? 'lbl strong' : 'lbl'));
+  });
+
+  buildTable(FR);
+  updateKpis(FR);
+  noteUpd(ntail);
+  applyFilter(fp, fmk);
+  draw._fp = fp; draw._fmk = fmk;
+}
+
+// ---------- 表格 / KPI / 说明 ----------
+function buildTable(FR){
+  document.getElementById('frbody').innerHTML =
+    FR.slice().sort(function(a, b){ return a.p - b.p; }).map(function(d){
+      var cl;
+      if (MODE === 'aa') {
+        cl = '<small style="color:#7c8397">不含缓存定价</small>';
+      } else if (CSRC === 'uniform') {
+        cl = '<small style="color:#7c8397">统一 ' + (CDISC*100).toFixed(0) + '%</small>';
+      } else if (d.cr != null) {
+        cl = fmtP(cv(d.cr)) + ' <small style="color:#7c8397">(' + fmtC(d.cc, true) + ')</small>';
+      } else {
+        cl = '<small style="color:#f0883e">无定价</small> <small style="color:#7c8397">(回退 ' + (CDISC*100).toFixed(0) + '%)</small>';
+      }
+      return '<tr' + (d.china ? " class='hl'" : '') + ' data-slug="' + escA(d.slug) + '" data-name="' + escA(d.name) + '" data-vendor="' + escA(d.c) + '">' +
+        '<td><b>' + escA(d.sn) + '</b>' +
+        (d.ret ? ' <span style="color:#f0883e" title="' + escA(d.ret) + '——历史价，与现役模型不可直接比价">⚠</span>' : '') +
+        '</td><td>' + escA(d.c) + '</td><td><b>' + d.a + '</b></td><td>' + fmtP(d.p) + '</td>' +
+        '<td>' + fmtP(cv(d.pi)) + ' / ' + fmtP(cv(d.po)) + '</td><td>' + cl + '</td>' +
+        '<td>' + (d.sp ? Math.round(d.sp) + ' t/s' : '—') + '</td><td>' + (d.rel || '—') + '</td></tr>';
+    }).join('');
+  document.getElementById('frhead').textContent = '斩杀线模型清单（' + FR.length + ' 个）';
+}
+function updateKpis(FR){
+  var n = D.length, dom = n - FR.length;
+  document.getElementById('kpiN').innerHTML = n + ' 个 <small>有价格+AAII</small>';
+  document.getElementById('kpiF').innerHTML = FR.length + ' 个 <small>未被支配</small>';
+  document.getElementById('kpiD').innerHTML = dom + ' 个 <small>' + (dom/n*100).toFixed(0) + '%</small>';
+  var cheap = D.reduce(function(a, b){ return b.p < a.p ? b : a; });
+  var smart = D.reduce(function(a, b){ return b.a > a.a ? b : a; });
+  document.getElementById('kpiC').innerHTML = fmtP(cheap.p) + ' <small>' + escA(cheap.sn).slice(0,20) + ' · ' + cheap.a + '</small>';
+  document.getElementById('kpiS').innerHTML = smart.a + ' <small>' + escA(smart.sn).slice(0,20) + '</small>';
+}
+function noteUpd(ntail){
+  document.getElementById('nmode').textContent = modeLabel();
+  var nc = document.getElementById('ncache');
+  if (nc){
+    nc.innerHTML = '已接入 <b>' + CFG.cov.have + ' / ' + CFG.cov.total + '</b> 个模型的逐模型真实缓存读价（'
+      + Math.round(CFG.cov.have / CFG.cov.total * 100) + '% 覆盖）。'
+      + '折扣 c 一律用 <b>AA 输入价</b>做分母重算（OpenRouter 原始 c 会因价档不一致失真，如 Kimi K3 曾算出 88%），'
+      + '重算后越界（c>50%）视为匹配不可靠，回退到统一折扣并在 tooltip 标注。';
+  }
+  var nr = document.getElementById('nret');
+  if (nr){
+    nr.innerHTML = SHOW_RET
+      ? '已<b>加回 ' + CFG.nret + ' 个已下线条目</b>（橙色虚线环保），仅作历史参照，勿与现役模型比价'
+      : '默认已<b>剔除 ' + CFG.nret + ' 个已下线条目</b>（勾选上方「包含已下线模型」可加回）';
+  }
+  var ex = D_ALL.filter(function(d){ return d.ext; });
+  var nx = document.getElementById('next');
+  if (nx){
+    if (!ex.length){ nx.textContent = '无。'; }
+    else {
+      var names = ex.map(function(d){ return '<b>' + escA(d.name) + '</b>（' + escA(d.c) + '，' + escA(d.rel || '—') + (d.extnew ? '，<span style="color:#7fe6ee">新发布已默认展示</span>' : '') + '）'; }).join('、');
+      nx.innerHTML = names + ' 为厂商官方发布、<b>AA 尚未收录</b>的模型，价格取自其官方定价页（非 AA 口径）；'
+        + 'AAII 沿用同基座模型（FlashX 为提速版，AA 未单独评测；1017 沿用前代 V4.1-Flash）。'
+        + (SHOW_EXT ? '当前<b>全部显示</b>（紫色密集虚线环）。' : '近 30 天发布的已<b>默认展示</b>，其余勾选上方「含外部补充」可加入。');
+    }
+  }
+  var nn = document.getElementById('nextN');
+  if (nn){ nn.textContent = ex.length ? '（' + ex.length + '）' : ''; }
+  var nu = document.getElementById('ncur');
+  if (nu){
+    nu.textContent = CUR === 'cny'
+      ? '人民币（按 USD/CNY 中间价 ' + FXR.toFixed(4) + ' 折算 · 中国货币网 2026-09-15）'
+      : '美元（厂商原始挂牌价）';
+  }
+  [['nv1', 0.13, 0.28], ['nv2', 0.44, 1.32], ['nv3', 0.094, 0.195]].forEach(function(t){
+    var e = document.getElementById(t[0]);
+    if (e) e.textContent = fmtP(cv(t[1])) + ' / ' + fmtP(cv(t[2]));
+  });
+  document.getElementById('nclip').innerHTML = !ntail ? ''
+    : CFG.tail
+      ? '<br>右侧「压缩尾段」收纳了 ' + ntail + ' 个有效价高于 ' + fmtP(CFG.cap) + ' 的模型：仍是同一对数轴，但该段内部单独压缩，'
+        + '所以不再堆成一条竖线；取消「尾部压缩」可完全展开（主区会被挤窄）。'
+      : '<br>尾部已按完整对数轴展开：' + ntail + ' 个超贵模型分布在右侧（取消勾选「尾部压缩」即此状态）。';
+}
+
+// ---------- 筛选 / 点亮 ----------
+var qEl = document.getElementById('q'), cntEl = document.getElementById('cnt'), chipsEl = document.getElementById('chips');
+var BASE_R = 4.6, DIM_R = 3.2, HIT_R = 6.2;
+// 五角星（单位外径 = 1，内径 0.42），按 scale 缩放到目标尺寸
+var STAR_BASE = 6.4, STAR_DIM = 4.6, STAR_HIT = 8.6;
+var STAR_D = (function(){
+  var out = [], R = 1, r = 0.42;
+  for (var i = 0; i < 10; i++){
+    var ang = -Math.PI/2 + i*Math.PI/5, rad = i % 2 ? r : R;
+    out.push((i ? 'L' : 'M') + (Math.cos(ang)*rad).toFixed(4) + ' ' + (Math.sin(ang)*rad).toFixed(4));
+  }
+  return out.join(' ') + ' Z';
+})();
+
+function tokens(raw){ return (raw || '').toLowerCase().split(/[\s,，、]+/).filter(Boolean); }
+// 对比语法：用 “vs/对比” 或 ；;｜|、 分隔多段，每段解析为一个模型；返回段数组（≥2 视为对比模式）
+function splitParts(raw){
+  var s = (raw || '').trim();
+  if (!s) return [];
+  var parts = s.split(/\s+(?:vs\.?|对比)\s+|\s*[;；|｜]\s*|\s*、\s*/i);
+  parts = parts.map(function(x){ return x.trim(); }).filter(Boolean);
+  return parts.length >= 2 ? parts : [];
+}
+function hayOf(d){ return (d.name + ' ' + d.sn + ' ' + d.c).toLowerCase(); }
+// 单侧匹配：侧内多个 token 为 AND，厂商/国产开关同样生效
+function matchToks(d, toks){
+  if (VENDOR && d.c !== VENDOR) return false;
+  if (CNONLY && !d.china) return false;
+  var hay = hayOf(d);
+  for (var i = 0; i < toks.length; i++){ if (hay.indexOf(toks[i]) < 0) return false; }
+  return true;
+}
+function hitOf(d, toks){
+  if (toks.length || VENDOR || CNONLY) return matchToks(d, toks);
+  return false;
+}
+function sortAII(arr){ return arr.slice().sort(function(a, b){ return b.a - a.a; }); }
+function topMatch(arr){
+  var s = sortAII(arr);
+  if (!s.length) return null;
+  return s[0];
+}
+// 先试精确名（sn/name 全等），再退化到最高 AAII 的模糊命中
+function bestMatch(pool, seg){
+  var toks = tokens(seg), low = (seg || '').toLowerCase();
+  var cand = pool.filter(function(d){ return matchToks(d, toks); });
+  var exact = cand.filter(function(d){ return (d.sn || '').toLowerCase() === low || (d.name || '').toLowerCase() === low; });
+  return topMatch(exact.length ? exact : cand);
+}
+
+// 手动点选对比集合（与搜索框的对比语法合并）
+var CLICKED = [];
+function inClicked(slug){ return CLICKED.indexOf(slug) >= 0; }
+function toggleClicked(slug){
+  var i = CLICKED.indexOf(slug);
+  if (i >= 0) CLICKED.splice(i, 1); else CLICKED.push(slug);
+}
+// 解析当前应对比的模型列表；返回 {list, miss}
+// 在 D_ALL 里搜（含被开关隐藏的 ext/ret 条目），隐藏命中仍进对比面板并在提示里说明
+function resolveCompare(){
+  var segs = splitParts(qEl.value), list = [], miss = [], seen = {}, hidden = [];
+  segs.forEach(function(seg){
+    var m = bestMatch(D_ALL, seg);
+    if (m){
+      if (!seen[m.slug]){ seen[m.slug] = 1; list.push(m); }
+    }
+    else miss.push(seg);
+  });
+  D_ALL.forEach(function(d){ if (inClicked(d.slug) && !seen[d.slug]){ seen[d.slug] = 1; list.push(d); } });
+  var visSet = {};
+  D.forEach(function(d){ visSet[d.slug] = 1; });
+  list.forEach(function(d){ if (!visSet[d.slug]) hidden.push(d.sn); });
+  return {list: list, miss: miss, manual: segs.length >= 2, hidden: hidden};
+}
+
+// 节点尺寸切换（圆用 r，星用 transform scale）
+function sizeNode(o, st){
+  if (o.isRect) return;
+  if (o.isStar){
+    var k = st === 'hit' ? STAR_HIT : (st === 'dim' ? STAR_DIM : STAR_BASE);
+    o.node.setAttribute('transform', 'translate(' + o.cx + ',' + o.cy + ') scale(' + k + ')');
+  } else {
+    o.node.setAttribute('r', st === 'hit' ? HIT_R : (st === 'dim' ? DIM_R : BASE_R));
+  }
+}
+
+function applyFilter(fp, fmk){
+  fp = fp || draw._fp; fmk = fmk || draw._fmk;
+  var toks = tokens(qEl.value);
+  var cmp = resolveCompare();
+  var isCmp = cmp.list.length >= 1 && (cmp.manual || CLICKED.length >= 1);
+  var selSet = {};
+  if (isCmp) cmp.list.forEach(function(d){ selSet[d.slug] = 1; });
+  var active = toks.length > 0 || !!VENDOR || CNONLY || isCmp;
+  var matched = [];
+
+  nodes.forEach(function(o){
+    var isSel = !!selSet[o.d.slug];
+    var hit = isCmp ? isSel : hitOf(o.d, toks);
+    o.hit = hit; o.d.hit = hit;
+    if (!active){
+      o.node.setAttribute('opacity', o.isStar ? '.95' : '.85');
+      sizeNode(o, 'base');
+      o.halo.setAttribute('opacity', 0);
+    } else if (hit){
+      o.node.setAttribute('opacity', 1);
+      sizeNode(o, 'hit');
+      o.halo.setAttribute('opacity', 1);
+      matched.push(o.d);
+    } else {
+      o.node.setAttribute('opacity', '.05');
+      sizeNode(o, 'dim');
+      o.halo.setAttribute('opacity', 0);
+    }
+  });
+
+  fp.setAttribute('opacity', active ? '.16' : '.92');
+  fmk.forEach(function(o){ o.m.setAttribute('opacity', active ? (o.d.hit ? 1 : '.12') : 1); });
+  gLabels.setAttribute('opacity', active ? '.1' : 1);
+
+  clearG(gFLbl);
+  var sorted = matched.slice().sort(function(a, b){ return b.a - a.a; });
+  if (isCmp) placeCmpLabels(sortAII(cmp.list));
+  else {
+    var pl = [];
+    sorted.forEach(function(d){
+      if (!d.hit) return;
+      var px = X(d.p), py = Y(d.a);
+      var w2 = d.sn.length*5.9+8;
+      var b = {x:lblX(px, w2, 10), y:py-6.5, w:w2, h:13};
+      for (var j = 0; j < pl.length; j++){
+        var o = pl[j];
+        if (b.x < o.x+o.w && b.x+b.w > o.x && b.y < o.y+o.h && b.y+b.h > o.y) return;
+      }
+      pl.push(b); gFLbl.appendChild(txt(b.x+1, py+4, d.sn, 'lbl2'));
+    });
+  }
+
+  // 被开关隐藏、但匹配当前筛选的条目：提示如何把它们显示出来（否则搜索结果看着像「模型不存在」）
+  var hidRet = 0, hidExt = 0;
+  if (active){
+    D_ALL.forEach(function(d){
+      if ((SHOW_RET || !d.ret) && (SHOW_EXT || !d.ext || d.extnew)) return;   // 当前已显示，不计
+      if (!hitOf(d, toks)) return;
+      if (!SHOW_RET && d.ret) hidRet++;
+      else if (!SHOW_EXT && d.ext && !d.extnew) hidExt++;
+    });
+  }
+
+  if (!active){
+    cntEl.innerHTML = '未筛选 · 共 ' + D.length + ' 个模型　·　点圆点或搜索结果可加入对比';
+    chipsEl.innerHTML = '';
+  } else {
+    var parts = [];
+    if (toks.length) parts.push('关键词「' + toks.join(' ') + '」');
+    if (VENDOR) parts.push('厂商「' + escA(VENDOR) + '」');
+    if (CNONLY) parts.push('仅国产');
+    var hint = '';
+    if (hidRet) hint += '<span class="hidhint"> ｜ 另有 <b>' + hidRet + '</b> 个<b>已下线</b>条目也匹配 → 勾选上方「包含已下线模型」可显示</span>';
+    if (hidExt) hint += '<span class="hidhint"> ｜ 另有 <b>' + hidExt + '</b> 个<b>外部补充</b>条目也匹配 → 勾选「含外部补充」可显示</span>';
+    if (isCmp){
+      cntEl.innerHTML = '对比模式 → 已选 <b>' + cmp.list.length + '</b> 个模型'
+        + (cmp.hidden.length ? '<span class="hidhint"> ｜ 其中 ' + cmp.hidden.length + ' 个为隐藏条目（' + cmp.hidden.map(escA).join(' / ') + '），勾选「含外部补充 / 包含已下线」可见其圆点</span>' : '')
+        + (cmp.miss.length ? '<span class="hidhint"> ｜ 未匹配：' + cmp.miss.map(escA).join(' / ') + '</span>' : '') + hint;
+    } else {
+      cntEl.innerHTML = parts.join(' + ') + ' → 命中 <b>' + matched.length + '</b> 个模型'
+        + (matched.length > 8 ? '（按 AAII 降序，图上点亮前 8；点圆点可加入对比）' : '（点圆点可加入对比）') + hint;
+    }
+    var chipList;
+    if (cmp.manual) chipList = matched.slice();
+    else if (toks.length) chipList = D.filter(function(d){ return matchToks(d, toks); });
+    else chipList = matched.slice();
+    chipsEl.innerHTML = sortAII(chipList).slice(0, 12)
+      .map(function(d){
+        var sel = inClicked(d.slug);
+        return '<button class="chip' + (sel ? ' cA' : '') + '" data-slug="' + escA(d.slug) + '" title="点击加入 / 移出对比">'
+          + escA(d.sn) + ' <em>' + d.a + '</em>' + (sel ? ' ✚' : ' ⊕') + '</button>';
+      })
+      .join('');
+    Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip'), function(b){
+      b.addEventListener('click', function(){ toggleClicked(b.getAttribute('data-slug')); applyFilter(); });
+    });
+  }
+
+  renderCompare(isCmp ? cmp.list : [], isCmp ? cmp.miss : []);
+
+  Array.prototype.forEach.call(document.querySelectorAll('.frtable tbody tr'), function(tr){
+    var hay = ((tr.getAttribute('data-name') || '') + ' ' + (tr.getAttribute('data-vendor') || '')).toLowerCase();
+    var ok = false;
+    if (isCmp){
+      ok = !!selSet[(tr.getAttribute('data-slug') || '')];
+    } else if (active){
+      ok = true;
+      for (var i = 0; ok && i < toks.length; i++){ if (hay.indexOf(toks[i]) < 0) ok = false; }
+      if (ok && VENDOR && tr.getAttribute('data-vendor') !== VENDOR) ok = false;
+      if (ok && CNONLY && !tr.classList.contains('hl')) ok = false;
+    }
+    tr.classList.toggle('hit', ok);
+  });
+}
+
+// 对比模式标签：多候选位置回退（右/左/上下/斜角），保证每个选中模型都有标注
+function placeCmpLabels(list){
+  var placed = [];
+  list.forEach(function(d){
+    var px = X(d.p), py = Y(d.a), w = d.sn.length*5.9+8, h = 13;
+    var dyS = [-20.5, -6.5, 14, 28, 42, 56];
+    var cands = [];
+    dyS.forEach(function(dy){
+      cands.push([px+10, py+dy], [px-10-w, py+dy], [px-w/2, py+dy], [px+18, py+dy], [px-18-w, py+dy]);
+    });
+    var placedOk = false;
+    for (var c = 0; c < cands.length && !placedOk; c++){
+      var bx = Math.max(M.l, Math.min(W - 4 - w, cands[c][0]));
+      var by = Math.max(M.t + 2, Math.min(M.t + ph - 12, cands[c][1]));
+      var b = {x:bx, y:by, w:w, h:h}, hit = false;
+      for (var j = 0; j < placed.length; j++){
+        var o = placed[j];
+        if (b.x < o.x+o.w && b.x+b.w > o.x && b.y < o.y+o.h && b.y+b.h > o.y){ hit = true; break; }
+      }
+      if (!hit){ placed.push(b); gFLbl.appendChild(txt(bx+1, by+10, d.sn, 'lbl2')); placedOk = true; }
+    }
+    if (!placedOk){
+      var bx2 = Math.max(M.l, Math.min(W - 4 - w, px + 10)), by2 = Math.min(M.t + ph - 12, py + 42);
+      placed.push({x:bx2, y:by2, w:w, h:h}); gFLbl.appendChild(txt(bx2+1, by2+10, d.sn, 'lbl2'));
+    }
+  });
+}
+
+// 对比面板：N 个模型的并排表格（AAII 降序，首个为基准）
+function renderCompare(list, miss){
+  var cmpEl = document.getElementById('cmp');
+  if (!list.length && !(miss && miss.length)){ cmpEl.className = 'cmp'; cmpEl.innerHTML = ''; return; }
+  cmpEl.className = 'cmp on';
+  if (!list.length){
+    cmpEl.innerHTML = '<div class="sephint">未匹配到模型：' + miss.map(escA).join(' / ')
+      + '　（请检查拼写，或勾选上方「包含已下线模型 / 含外部补充」）</div>';
+    return;
+  }
+  list = sortAII(list);
+  var base = list[0];
+  var head = '<tr><th>#</th><th>模型</th><th>厂商</th><th>AAII</th><th>有效价 /1M</th>'
+    + '<th>输入 / 输出</th><th>缓存读价</th><th>速度</th><th>TTFT</th><th>发布日期</th><th>相对最强</th></tr>';
+  var rows = list.map(function(d, i){
+    var cc;
+    if (MODE === 'aa') cc = '<small style="color:#7c8397">不含缓存</small>';
+    else if (CSRC === 'uniform') cc = '<small style="color:#7c8397">统一 ' + (CDISC*100).toFixed(0) + '%</small>';
+    else if (d.cr != null) cc = fmtP(cv(d.cr)) + ' <small style="color:#7c8397">(' + fmtC(d.cc, true) + ')</small>';
+    else cc = '<small style="color:#f0883e">无定价</small>';
+    var dA = Math.round((d.a - base.a) * 10) / 10;
+    var dP = base.p ? (d.p / base.p - 1) : 0;
+    var dlt = (i === 0) ? '<span style="color:#7c8397">基准</span>'
+      : 'AAII ' + (dA >= 0 ? '+' : '') + dA + ' · 价 ' + (dP >= 0 ? '+' : '') + Math.round(dP*100) + '%';
+    return '<tr><td>' + (i+1) + '</td>'
+      + '<td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + d.co + ';margin-right:6px;vertical-align:middle"></span><b>' + escA(d.sn) + '</b>'
+      + (d.ret ? ' <span style="color:#f0883e" title="' + escA(d.ret) + '">⚠</span>' : '') + '</td>'
+      + '<td>' + escA(d.c) + '</td><td><b>' + d.a + '</b></td>'
+      + '<td>' + fmtP(d.p) + '</td><td>' + fmtP(cv(d.pi)) + ' / ' + fmtP(cv(d.po)) + '</td>'
+      + '<td>' + cc + '</td><td>' + (d.sp ? Math.round(d.sp) + ' t/s' : '—') + '</td>'
+      + '<td>' + (d.ttft ? d.ttft.toFixed(2) + 's' : '—') + '</td><td>' + (d.rel || '—') + '</td>'
+      + '<td class="dlt">' + dlt + '</td></tr>';
+  }).join('');
+  var missLine = (miss && miss.length)
+    ? '<div class="sephint" style="margin-top:6px">未匹配：' + miss.map(escA).join(' / ') + '（请检查拼写或勾选上方开关）</div>' : '';
+  cmpEl.innerHTML = '<table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>'
+    + '<div class="sephint" style="margin-top:8px">共 <b>' + list.length + '</b> 个模型 · 按 <b>AAII 降序</b> · '
+    + '<button id="cmpclr" class="plain" style="padding:3px 10px;font-size:11px">清除对比</button>'
+    + '　搜索框用 <code>;</code> <code>|</code> <code>、</code> 或 <code>vs</code> 分隔多个模型，或直接点图上的圆点</div>'
+    + missLine;
+  var cb = document.getElementById('cmpclr');
+  if (cb) cb.addEventListener('click', function(){ CLICKED = []; qEl.value = ''; applyFilter(); });
+}
+
+function syncLegend(){
+  Array.prototype.forEach.call(document.querySelectorAll('.lg'), function(s){
+    var on = (s.getAttribute('data-vendor') !== null && s.getAttribute('data-vendor') === VENDOR)
+          || (s.getAttribute('data-cn') === '1' && CNONLY);
+    s.classList.toggle('on', !!on);
+  });
+}
+
+function syncParams(){
+  // 不同价格口径 → 不同可见参数（官方口径无参数，Agent 口径才有 R/h/c）
+  document.getElementById('pA').hidden = (MODE === 'agent');
+  document.getElementById('pB').hidden = (MODE !== 'agent');
+  if (MODE !== 'agent') return;
+  var real = (CSRC === 'real');
+  document.getElementById('lbC').classList.toggle('off', HIT <= 0);
+  document.getElementById('lbC').title = real
+    ? '当前「按模型真实价」，此滑杆仅作为缺失模型的回退值'
+    : '当前「统一折扣」，适用所有模型';
+  var inFac = CDISC * HIT + (1 - HIT);
+  var msg = [];
+  if (HIT <= 0) msg.push('<span class="warn">h = 0 → 无缓存读，c 不参与计算</span>');
+  document.getElementById('derived').innerHTML =
+    (real
+      ? '缓存价：<b>按模型真实价</b>（源自 OpenRouter）· 已覆盖 <b>'
+        + CFG.cov.have + ' / ' + CFG.cov.total + '</b> 个模型（' + Math.round(CFG.cov.have/CFG.cov.total*100)
+        + '%）· 缺失模型回退 c=<b>' + (CDISC*100).toFixed(0) + '%</b>'
+      : '缓存价：<b>统一折扣 c=' + (CDISC*100).toFixed(0) + '%</b>（适用于全部模型）')
+    + '　·　回退系数 h×c+(1−h) = <b>' + (inFac*100).toFixed(1) + '%</b>'
+    + '　·　输入权重 <b>' + (RATIO/(RATIO+1)*100).toFixed(1) + '%</b>'
+    + '　·　输出权重 <b>' + (1/(RATIO+1)*100).toFixed(1) + '%</b>'
+    + (msg.length ? '　' + msg.join('　') : '');
+}
+
+// 事件
+qEl.addEventListener('input', function(){ applyFilter(); });
+document.getElementById('reset').addEventListener('click', function(){
+  qEl.value = ''; VENDOR = ''; CNONLY = false; CLICKED = []; syncLegend(); applyFilter(); qEl.focus();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.lg'), function(s){
+  s.addEventListener('click', function(){
+    if (s.classList.contains('starhint')) return;   // 纯图例说明，不参与筛选
+    if (s.getAttribute('data-cn') === '1'){ CNONLY = !CNONLY; }
+    else { var v = s.getAttribute('data-vendor'); VENDOR = (VENDOR === v) ? '' : v; }
+    syncLegend(); applyFilter();
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('#prbasis button'), function(b){
+  b.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('#prbasis button'), function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    PBASIS = b.getAttribute('data-pb');
+    if (MODE === 'agent'){ syncParams(); draw(); }
+  });
+});
+Array.prototype.forEach.call(document.querySelectorAll('#pmode button'), function(b){
+  b.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('#pmode button'), function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    MODE = b.getAttribute('data-mode');
+    syncParams();
+    draw();
+  });
+});
+document.getElementById('csrc').addEventListener('change', function(){
+  CSRC = this.value;
+  syncParams(); if (MODE === 'agent') draw();
+});
+Array.prototype.forEach.call(document.querySelectorAll('#cur button'), function(b){
+  b.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('#cur button'), function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    CUR = b.getAttribute('data-cur');
+    draw();
+  });
+});
+document.getElementById('sret').addEventListener('change', function(){
+  SHOW_RET = this.checked;
+  D = D_ALL.filter(function(d){ return (SHOW_RET || !d.ret) && (SHOW_EXT || !d.ext || d.extnew); });
+  draw();
+});
+document.getElementById('stail').addEventListener('change', function(){
+  TAIL_ON = this.checked;
+  draw();
+});
+document.getElementById('sext').addEventListener('change', function(){
+  SHOW_EXT = this.checked;
+  D = D_ALL.filter(function(d){ return (SHOW_RET || !d.ret) && (SHOW_EXT || !d.ext || d.extnew); });
+  draw();
+});
+[['sR','RATIO','oR',' : 1'],['sH','HIT','oH','%'],['sC','CDISC','oC','%']].forEach(function(t){
+  var sl = document.getElementById(t[0]);
+  sl.addEventListener('input', function(){
+    var v = parseFloat(sl.value);
+    if (t[1] === 'RATIO') RATIO = v; else if (t[1] === 'HIT') HIT = v/100; else CDISC = v/100;
+    document.getElementById(t[2]).textContent = (t[1] === 'RATIO' ? v : Math.round(v)) + t[3];
+    if (MODE === 'agent'){ syncParams(); draw(); }
+  });
+});
+
+syncParams();
+draw();
+</script>
+</body>
+</html>

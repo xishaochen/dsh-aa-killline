@@ -1,0 +1,50 @@
+{
+  "name": "dsh-aa-killline",
+  "version": "0.1.0",
+  "description": "Model kill-line charts for DeepSeek Harness: computes global and China AIII-vs-price Pareto frontiers (kill lines) from Artificial Analysis data plus OpenRouter real cache-read prices, and a strongest-model-per-vendor table against an OpenAI-compatible gateway. Runs on plain python3 stdlib scripts with an --offline recompute mode that never spends API quota.",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "skill",
+    "artificial-analysis",
+    "model-comparison",
+    "pareto-frontier",
+    "llm-pricing"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "dsh": ">=0.2.1-rc.2"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "scripts",
+    "!scripts/__pycache__",
+    "!scripts/**/*.pyc",
+    "templates",
+    "SKILL.md",
+    "README.md",
+    "cordis.patch.yml",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xishaochen/dsh-aa-killline.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
