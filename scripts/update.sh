@@ -1,7 +1,6 @@
 #!/bin/bash
 # aa-killline：模型斩杀线一键更新（DSH 插件公开版）
-# 流程：刷新 AA LLM 数据 → 刷新 OpenRouter 真实缓存读价 → 重算全球/国产斩杀线图
-#       → 重算「厂商最强 × AIHub 上架 × 思考等级」对照表 → 产物落本包 output/
+# 流程：刷新 AA LLM 数据 → 刷新 OpenRouter 真实缓存读价 → 重算全球/国产斩杀线图 → 产物落本包 output/
 # 注意：不含 PagesHub 发布；凭证不随包分发，首次使用前按 README 配置
 #
 # 可调环境变量：
@@ -9,13 +8,12 @@
 #   AA_FXR=6.7220       人民币中间价
 #   AA_FXR_DATE=...     汇率取值日（图内注记）
 #   PY=python3          Python 解释器（默认优先 DSH 自带 3.12，回退 /usr/bin/python3）
-#   AIHUB_KEY=...       对照表用 AIHub 网关 key（默认读 config/aihub.env，缺失时上架列标 —）
 #   AA_RADAR_DIR=...    额外同步目录（可选，默认不同步）
 #
 # 用法：
 #   bash scripts/update.sh                # 全量刷新（AA 免费 key 限流，日跑一次安全）
-#   bash scripts/update.sh --no-refresh   # 只用本地缓存重算（不耗 AA key）
-#   bash scripts/update.sh --offline      # 同上（别名）
+#   bash scripts/update.sh --offline      # 只用本地缓存重算（不耗 AA key）
+#   bash scripts/update.sh --no-refresh   # 同上（别名）
 
 set -uo pipefail
 
@@ -45,7 +43,7 @@ echo "────────────────────────�
 
 # 1) 刷新 AA 数据并回灌斩杀线缓存
 if [ $NO_REFRESH -eq 1 ]; then
-  echo "① 跳过 AA 数据刷新（--no-refresh，直接用本地缓存）"
+  echo "① 跳过 AA 数据刷新（--offline，直接用本地缓存）"
 else
   echo "① 刷新 Artificial Analysis LLM 数据并回灌斩杀线缓存…"
   if ! AA_OUT=$("$PY" "$SKILL_DIR/scripts/refresh_killline_cache.py" --refresh 2>&1); then
@@ -76,29 +74,14 @@ if ! GEN_OUT=$(AA_OUT_DIR="$OUT_DIR" AA_SNAP="$SNAP" AA_FXR="$FXR" AA_FXR_DATE="
 fi
 echo "$GEN_OUT" | sed 's/^/   /'
 
-# 4) 厂商最强 × AIHub 上架 × 思考等级 对照表（失败不阻断）
-echo "④ 重算厂商最强 × AIHub 对照表…"
-# AIHub key：环境变量 → config/aihub.env；都没有则 hub_key() 返回 None，上架列标 —
-if [ -z "${AIHUB_KEY:-}" ] && [ -f "$SKILL_DIR/config/aihub.env" ]; then
-  export AIHUB_KEY="$(grep -E '^AIHUB_KEY=' "$SKILL_DIR/config/aihub.env" | head -1 | cut -d= -f2- | tr -d '"'"'"'')"
-fi
-TBL_OUT=$(AA_OUT_DIR="$OUT_DIR" AA_SNAP="$SNAP" "$PY" "$SKILL_DIR/scripts/gen_top_table.py" 2>&1)
-TBL_RC=$?
-echo "$TBL_OUT" | sed 's/^/   /'
-[ $TBL_RC -ne 0 ] && echo "   ⚠️ 对照表生成失败（图已生成，表未更新）"
-
-# 5) 产物归集：直接在 output/ 生成，再补中文语义化副本
+# 4) 产物归集：直接在 output/ 生成，再补中文语义化副本
 G="$OUT_DIR/aa_global_scatter_price_${TAG}.html"
 C="$OUT_DIR/aa_china_scatter_price_${TAG}.html"
-T1="$OUT_DIR/aa_top_vs_aihub_${TAG}.html"
-T2="$OUT_DIR/aa_top_vs_aihub_${TAG}.csv"
-echo "⑤ 产物："
+echo "④ 产物："
 [ -f "$G" ] && cp "$G" "$OUT_DIR/斩杀线图_全球_${TAG}.html" && echo "   ✅ 斩杀线图_全球_${TAG}.html"
 [ -f "$C" ] && cp "$C" "$OUT_DIR/斩杀线图_国产_${TAG}.html" && echo "   ✅ 斩杀线图_国产_${TAG}.html"
-[ -f "$T1" ] && cp "$T1" "$OUT_DIR/厂商最强_对照_${TAG}.html" && echo "   ✅ 厂商最强_对照_${TAG}.html"
-[ -f "$T2" ] && cp "$T2" "$OUT_DIR/厂商最强_对照_${TAG}.csv" && echo "   ✅ 厂商最强_对照_${TAG}.csv"
 
-# 6) 可选：额外同步目录（如另一份产出归档目录）
+# 5) 可选：额外同步目录（如另一份产出归档目录）
 if [ -n "${AA_RADAR_DIR:-}" ] && [ -d "$AA_RADAR_DIR" ] && [ -f "$G" ] && [ -f "$C" ]; then
   cp "$OUT_DIR/斩杀线图_全球_${TAG}.html" "$AA_RADAR_DIR/"
   cp "$OUT_DIR/斩杀线图_国产_${TAG}.html" "$AA_RADAR_DIR/"

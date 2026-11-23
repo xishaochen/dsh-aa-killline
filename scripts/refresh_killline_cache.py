@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""刷新斩杀线图/对照表读的本地缓存 _data_llms_models.json。
+"""刷新斩杀线图读取的本地缓存 _data_llms_models.json。
 
 背景（2026-11-12）：AA 旧端点 /api/v2/data/llms/models 已退役（410），
 aa_rank.fetch_models 已迁移到新免费分页端点 /language/models/free（并拍平 performance）。
-但 gen_scatter_0915.py / gen_top_table.py 仍直接读旧缓存文件 _data_llms_models.json，
+但 gen_scatter_0915.py 仍直接读旧缓存文件 _data_llms_models.json，
 不含 11-02 之后的新模型（如 Claude Fable 5.2）。
 
 本脚本用修好的 fetch_models 拉全量（分页合并 + performance 拍平），
-按旧缓存格式 {"data": [...]} 回灌到 _data_llms_models.json，供散点图/对照表继续读取。
+按旧缓存格式 {"data": [...]} 回灌到 _data_llms_models.json，供散点图继续读取。
 """
 import json
 import os
@@ -25,7 +25,7 @@ def main():
     models, ts = aa_rank.fetch_models(refresh=refresh)
     out = {"status": 200, "prompt_options": {}, "data": models}
 
-    # 与旧缓存字段名完全对齐：确保散点图/对照表读到的 median_* 在顶层
+    # 与旧缓存字段名完全对齐：确保散点图读到的 median_* 在顶层
     os.makedirs(os.path.dirname(CACHE), exist_ok=True)
     tmp = CACHE + ".tmp"
     with open(tmp, "w") as f:

@@ -207,7 +207,7 @@ def emit(rows, headers, fmt, out):
 
 def _flatten_performance(m):
     """新 V2 免费端点把中位速度/TTFT 收进 performance 子对象；拍平回顶层，
-    让下游（散点图 / 对照表 / CLI）沿用旧字段名 median_output_tokens_per_second 等。"""
+    让下游（散点图 / CLI）沿用旧字段名 median_output_tokens_per_second 等。"""
     perf = m.get("performance") or {}
     for dst, src in (
         ("median_output_tokens_per_second", "median_output_tokens_per_second"),
