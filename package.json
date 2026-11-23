@@ -1,6 +1,6 @@
 {
   "name": "dsh-aa-killline",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Model kill-line charts for DeepSeek Harness: computes global and China AIII-vs-price Pareto frontiers (kill lines) from Artificial Analysis data plus OpenRouter real cache-read prices, and renders each as a self-contained HTML chart. Runs on plain python3 stdlib scripts with an --offline recompute mode that never spends API quota.",
   "keywords": [
     "deepseek-harness",
@@ -34,6 +34,7 @@
     "!scripts/**/*.pyc",
     "templates",
     "SKILL.md",
+    "config.example.env",
     "README.md",
     "cordis.patch.yml",
     "LICENSE"
